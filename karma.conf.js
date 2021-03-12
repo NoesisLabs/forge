@@ -9,6 +9,15 @@ module.exports = function(config) {
   var preprocessors = [];
   // webworker bundle preprocessors (always use webpack)
   var workerPreprocessors = ['webpack', 'sourcemap'];
+  // files/patterns to load
+  var files = [
+    'tests/karma/index.js',
+    // for webworkers
+    {
+      pattern: 'lib/prime.worker.js',
+      watched: false, included: false, served: true, nocache: false
+    }
+  ];
 
   if(bundler === 'browserify') {
     frameworks.push(bundler);
@@ -16,6 +25,7 @@ module.exports = function(config) {
   } else if(bundler === 'webpack') {
     preprocessors.push(bundler);
     preprocessors.push('sourcemap');
+    files.push('tests/karma/web-worker-rsa.js');
   } else {
     throw Error('Unknown bundler');
   }
@@ -29,27 +39,23 @@ module.exports = function(config) {
     frameworks: frameworks,
 
     // list of files / patterns to load in the browser
-    files: [
-      'tests/unit/index.js',
-      // for webworkers
-      {
-        pattern: 'lib/prime.worker.js',
-        watched: false, included: false, served: true, nocache: false
-      }
-    ],
+    files: files,
 
     // list of files to exclude
     exclude: [
     ],
 
     // preprocess matching files before serving them to the browser
-    // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
+    // available preprocessors:
+    // https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'tests/unit/index.js': preprocessors,
+      'tests/unit/**.js': preprocessors,
+      'tests/karma/**.js': preprocessors,
       'lib/prime.worker.js': workerPreprocessors
     },
 
     webpack: {
+      mode: 'development',
       devtool: 'inline-source-map',
       node: {
         Buffer: false,
@@ -77,16 +83,20 @@ module.exports = function(config) {
     colors: true,
 
     // level of logging
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    // possible values:
+    // config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN ||
+    // config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_INFO,
 
-    // enable / disable watching file and executing tests whenever any file changes
+    // enable / disable watching file and executing tests whenever any file
+    // changes
     autoWatch: false,
 
     // start these browsers
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    //browsers: ['PhantomJS', 'Chrome', 'Firefox', 'Safari'],
-    browsers: ['PhantomJS'],
+    // available browser launchers:
+    // https://npmjs.org/browse/keyword/karma-launcher
+    //browsers: ['ChromeHeadless', 'Chrome', 'Firefox', 'Safari'],
+    browsers: ['ChromeHeadless'],
 
     customLaunchers: {
       IE9: {

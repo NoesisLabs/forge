@@ -1,7 +1,5 @@
 var ASSERT = require('assert');
-var FORGE = require('../../lib/forge');
 var ED25519 = require('../../lib/ed25519');
-var RANDOM = require('../../lib/random');
 var SHA256 = require('../../lib/sha256');
 var UTIL = require('../../lib/util');
 
@@ -58,6 +56,22 @@ var UTIL = require('../../lib/util');
       var signature = ED25519.sign({
         md: md,
         privateKey: kp.privateKey
+      });
+      ASSERT.equal(eb64(signature), b64Sha256Signature);
+    });
+
+    it('should sign a digest given 32 private key bytes', function() {
+      var pwd = 'password';
+      var md = SHA256.create();
+      md.update(pwd, 'utf8');
+      var seed = md.digest().getBytes();
+      var kp = ED25519.generateKeyPair({seed: seed});
+      md = SHA256.create();
+      md.update('test', 'utf8');
+      var privateKey = kp.privateKey.slice(0, 32);
+      var signature = ED25519.sign({
+        md: md,
+        privateKey: privateKey
       });
       ASSERT.equal(eb64(signature), b64Sha256Signature);
     });
@@ -129,7 +143,7 @@ var UTIL = require('../../lib/util');
         var seed = md.digest().getBytes();
         var kp = ED25519.generateKeyPair({seed: seed});
         var signature = ED25519.sign({
-          message: new Buffer('test', 'utf8'),
+          message: Buffer.from('test', 'utf8'),
           privateKey: kp.privateKey
         });
         ASSERT.equal(eb64(signature), b64Signature);
@@ -181,7 +195,7 @@ var UTIL = require('../../lib/util');
         var seed = md.digest().getBytes();
         var kp = ED25519.generateKeyPair({seed: seed});
 
-        var signature = new Buffer(db64(b64Signature).getBytes(), 'binary');
+        var signature = Buffer.from(db64(b64Signature).getBytes(), 'binary');
 
         var verified = ED25519.verify({
           message: 'test',
